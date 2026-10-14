@@ -126,7 +126,7 @@ Gunakan hanya tipe soal yang diminta dan pastikan jumlah setiap jenis tepat sesu
     } catch (modelError: any) {
       const modelMessage = String(modelError?.message || "");
       const looksLikeMissingModel =
-        /model.*not found|not found.*model|models\\/[^ ]+.*not found|404/i.test(modelMessage);
+        /model.*not found|not found.*model|404/i.test(modelMessage);
 
       // If Vercel has a stale/incorrect GEMINI_MODEL value, retry once with
       // the known model instead of failing the whole generation request.
@@ -194,7 +194,7 @@ Gunakan hanya tipe soal yang diminta dan pastikan jumlah setiap jenis tepat sesu
     if (/API key|api_key|unauthenticated|permission denied/i.test(message)) {
       return jsonError(res, 502, "Gemini menolak akses API. Periksa GEMINI_API_KEY dan akses API di Google AI Studio.");
     }
-    if (/model.*not found|not found.*model|models\\/[^ ]+.*not found|404/i.test(message)) {
+    if (/model.*not found|not found.*model|404/i.test(message)) {
       const configuredModel = (process.env.GEMINI_MODEL || "gemini-2.5-flash").trim();
       return jsonError(
         res,
