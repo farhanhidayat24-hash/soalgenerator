@@ -1,0 +1,6 @@
+{
+  "name": "Generator Soal SD Pintar",
+  "description": "Generator Soal SD (Kelas 1-6) Kurikulum Merdeka & K13 dengan kustomisasi lengkap tipe soal, tingkat kesulitan LOTS/MOTS/HOTS, HTML interaktif CBT, ekspor PDF & Bank Soal terstruktur.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
