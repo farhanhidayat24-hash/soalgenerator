@@ -195,7 +195,7 @@ Gunakan hanya tipe soal yang diminta dan pastikan jumlah setiap jenis tepat sesu
       return jsonError(res, 502, "Gemini menolak akses API. Periksa GEMINI_API_KEY dan akses API di Google AI Studio.");
     }
     if (/model.*not found|not found.*model|404/i.test(message)) {
-      const configuredModel = (process.env.GEMINI_MODEL || "gemini-2.5-flash").trim();
+      const configuredModel = (process.env.GEMINI_MODEL || "gemini-3.5-flash").trim();
       return jsonError(
         res,
         502,
