@@ -113,7 +113,8 @@ Gunakan hanya tipe soal yang diminta dan pastikan jumlah setiap jenis tepat sesu
 
     const ai = new GoogleGenAI({ apiKey });
     const fallbackModel = "gemini-2.5-flash";
-    const configuredModel = (process.env.GEMINI_MODEL || fallbackModel).trim();
+    // Prefer the current stable Flash model for new projects; retain 2.5 Flash as fallback.
+    const configuredModel = (process.env.GEMINI_MODEL || "gemini-3.5-flash").trim();
     let result: Awaited<ReturnType<typeof ai.models.generateContent>>;
 
     try {
