@@ -56,11 +56,16 @@ export default function App() {
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status}`);
+        throw new Error(
+          data.warning ||
+          data.error ||
+          `Permintaan gagal (HTTP ${response.status}). Pastikan endpoint API tersedia dan konfigurasi Vercel sudah benar.`
+        );
       }
 
-      const data = await response.json();
       if (!data.success || !data.questions) {
         throw new Error(data.warning || 'Gagal menyusun soal');
       }
