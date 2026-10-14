@@ -112,12 +112,36 @@ Untuk jenis yang tidak memerlukan options/complexOptions/matchingPairs, boleh me
 Gunakan hanya tipe soal yang diminta dan pastikan jumlah setiap jenis tepat sesuai daftar di atas.`;
 
     const ai = new GoogleGenAI({ apiKey });
-    const result = await ai.models.generateContent({
-      // Stable broadly available model; can be changed via GEMINI_MODEL in Vercel.
-      model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
-      contents: prompt,
-      config: { responseMimeType: "application/json" },
-    });
+    const fallbackModel = "gemini-2.5-flash";
+    const configuredModel = (process.env.GEMINI_MODEL || fallbackModel).trim();
+    let result: Awaited<ReturnType<typeof ai.models.generateContent>>;
+
+    try {
+      result = await ai.models.generateContent({
+        model: configuredModel,
+        contents: prompt,
+        config: { responseMimeType: "application/json" },
+      });
+    } catch (modelError: any) {
+      const modelMessage = String(modelError?.message || "");
+      const looksLikeMissingModel =
+        /model.*not found|not found.*model|models\\/[^ ]+.*not found|404/i.test(modelMessage);
+
+      // If Vercel has a stale/incorrect GEMINI_MODEL value, retry once with
+      // the known model instead of failing the whole generation request.
+      if (!looksLikeMissingModel || configuredModel === fallbackModel) {
+        throw modelError;
+      }
+
+      console.warn(
+        `[api/generate-questions] Model "${configuredModel}" unavailable; retrying with "${fallbackModel}".`
+      );
+      result = await ai.models.generateContent({
+        model: fallbackModel,
+        contents: prompt,
+        config: { responseMimeType: "application/json" },
+      });
+    }
 
     const raw = result.text;
     if (!raw) {
@@ -169,8 +193,13 @@ Gunakan hanya tipe soal yang diminta dan pastikan jumlah setiap jenis tepat sesu
     if (/API key|api_key|unauthenticated|permission denied/i.test(message)) {
       return jsonError(res, 502, "Gemini menolak akses API. Periksa GEMINI_API_KEY dan akses API di Google AI Studio.");
     }
-    if (/model|not found|404/i.test(message)) {
-      return jsonError(res, 502, "Model atau endpoint Gemini tidak ditemukan. Periksa GEMINI_MODEL di Vercel.");
+    if (/model.*not found|not found.*model|models\\/[^ ]+.*not found|404/i.test(message)) {
+      const configuredModel = (process.env.GEMINI_MODEL || "gemini-2.5-flash").trim();
+      return jsonError(
+        res,
+        502,
+        `Model Gemini "${configuredModel}" dan model cadangan "gemini-2.5-flash" tidak tersedia untuk permintaan ini. Hapus GEMINI_MODEL dari Vercel atau set nilainya ke gemini-2.5-flash, lalu periksa akses model untuk API key di Google AI Studio.`
+      );
     }
     return jsonError(res, 502, "Gagal membuat soal melalui Gemini. Periksa log Functions di Vercel, lalu coba lagi.");
   }
