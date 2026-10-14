@@ -13,6 +13,6 @@ export default function handler(req: any, res: any) {
       process.env.GEMINI_API_KEY &&
       process.env.GEMINI_API_KEY !== "MY_GEMINI_API_KEY"
     ),
-    model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+    model: process.env.GEMINI_MODEL || "gemini-3.5-flash",
   });
 }
